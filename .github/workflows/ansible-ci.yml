@@ -3,9 +3,11 @@ name: Ansible CI
 
 on:
   pull_request:
+
   push:
     branches:
       - main
+
   workflow_dispatch:
 
 permissions:
@@ -18,10 +20,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -32,8 +34,11 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run playbook syntax check
+        env:
+          ANSIBLE_ROLES_PATH: ${{ github.workspace }}/roles
         run: |
           ansible-playbook --syntax-check playbooks/good.yml
+
 
   lint:
     name: Ansible Lint
@@ -41,10 +46,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -55,8 +60,14 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run ansible-lint
+        shell: bash
         run: |
-          ansible-lint playbooks/good.yml roles/demo_web
+          find playbooks roles \
+            -type f \
+            \( -name "*.yml" -o -name "*.yaml" \) \
+            ! -name "bad.yml" \
+            -print0 | xargs -0 ansible-lint
+
 
   lint-negative-demo:
     name: Demonstrate lint rejection
@@ -64,10 +75,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -92,19 +103,21 @@ jobs:
 
           echo "Success: ansible-lint rejected the intentionally bad playbook."
 
+
   molecule:
     name: Molecule
     runs-on: ubuntu-latest
+
     needs:
       - syntax-check
       - lint
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -119,12 +132,15 @@ jobs:
         env:
           PY_COLORS: "1"
           ANSIBLE_FORCE_COLOR: "1"
+          ANSIBLE_ROLES_PATH: ${{ github.workspace }}/roles
         run: |
           molecule test
+
 
   ci-success:
     name: CI passed
     runs-on: ubuntu-latest
+
     needs:
       - syntax-check
       - lint
