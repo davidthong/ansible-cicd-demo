@@ -1,0 +1,35 @@
+---
+- name: Demonstrate clean Ansible code
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    demo_directory: /tmp/ansible-cicd-demo
+    demo_file: "{{ demo_directory }}/clean-example.txt"
+
+  tasks:
+    - name: Ensure demo directory exists
+      ansible.builtin.file:
+        path: "{{ demo_directory }}"
+        state: directory
+        mode: "0755"
+
+    - name: Create demo content
+      ansible.builtin.copy:
+        dest: "{{ demo_file }}"
+        content: |
+          This file was created by clean Ansible code.
+        mode: "0644"
+
+    - name: Read demo file metadata
+      ansible.builtin.stat:
+        path: "{{ demo_file }}"
+      register: demo_file_stat
+
+    - name: Verify demo file exists
+      ansible.builtin.assert:
+        that:
+          - demo_file_stat.stat.exists
+          - demo_file_stat.stat.isreg
+        fail_msg: Demo file was not created successfully.
+        success_msg: Demo file exists as expected.

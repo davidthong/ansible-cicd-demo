@@ -1,0 +1,4 @@
+---
+demo_web_directory: /tmp/ansible-molecule-demo
+demo_web_file: "{{ demo_web_directory }}/index.html"
+demo_web_message: "Hello from Molecule"

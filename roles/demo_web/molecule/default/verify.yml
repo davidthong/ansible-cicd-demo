@@ -1,0 +1,24 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Read managed file metadata
+      ansible.builtin.stat:
+        path: /tmp/ansible-molecule-demo/index.html
+      register: demo_web_file_stat
+
+    - name: Read managed file
+      ansible.builtin.slurp:
+        src: /tmp/ansible-molecule-demo/index.html
+      register: demo_web_file_contents
+
+    - name: Validate role result
+      ansible.builtin.assert:
+        that:
+          - demo_web_file_stat.stat.exists
+          - demo_web_file_stat.stat.mode == "0644"
+          - (demo_web_file_contents.content | b64decode | trim) == "Hello from Molecule"
+        fail_msg: Molecule verification failed.
+        success_msg: Molecule verification passed.

@@ -1,0 +1,13 @@
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    - shell: echo "hello" > /tmp/bad-demo.txt
+    - command: cat /tmp/bad-demo.txt
+      register: x
+    - debug:
+        var: x.stdout
+    - name: install random package
+      package:
+        name: curl
+        state: latest

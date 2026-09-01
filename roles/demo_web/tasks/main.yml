@@ -1,0 +1,13 @@
+---
+- name: Ensure demo directory exists
+  ansible.builtin.file:
+    path: "{{ demo_web_directory }}"
+    state: directory
+    mode: "0755"
+
+- name: Deploy demo content
+  ansible.builtin.copy:
+    dest: "{{ demo_web_file }}"
+    content: |
+      {{ demo_web_message }}
+    mode: "0644"
