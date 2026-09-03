@@ -26,10 +26,23 @@ jobs:
           pip install ansible-core ansible-lint
 
       - name: Run ansible-lint
-        continue-on-error: true
         shell: bash
         run: |
+          set +e
+
           find playbooks roles \
             -type f \
             \( -name "*.yml" -o -name "*.yaml" \) \
             -print0 | xargs -0 ansible-lint
+
+          rc=$?
+
+          set -e
+
+          if [ "$rc" -ne 0 ]; then
+            echo "::warning::ansible-lint found violations. Review the lint output above."
+          else
+            echo "ansible-lint passed with no violations."
+          fi
+
+          exit 0
